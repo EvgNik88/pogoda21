@@ -12,3 +12,7 @@ python -m venv env
 ```
 env\Scripts\pip install -r requirements.txt
 ```
+6. Запустить программу 
+```
+python scraper.py
+```
