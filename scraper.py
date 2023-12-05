@@ -1,8 +1,11 @@
 from playwright.sync_api import Playwright, sync_playwright, Locator, Page
+import datetime
+import csv
 
 url = "https://pogoda21.ru/arch.php"
 
-def parse_table(table: Locator) -> None:
+
+def parse_table(table: Locator, year: int, month: int) -> None:
     rows = table.locator("tr")
     rows_count = rows.count()
     for i in range(2, rows_count):
@@ -11,17 +14,22 @@ def parse_table(table: Locator) -> None:
         cellData = []
         for j in range(cells.count()):
             cell = cells.nth(j)
-            if not cell.text_content():
-                continue
-            cellData.append(float(cell.text_content()))
+            if cell.text_content():
+                cellData.append(float(cell.text_content()))
+        date = datetime.datetime(year, month, i - 1).strftime("%d-%m-%Y")
+        cellData[0] = date
+
+
         print(cellData)
+
 
 def iterate_archive(page: Page, yearStart: int, yearEnd: int) -> None:
     for year in range(yearStart, yearEnd + 1):
-        for month in range(1, 12+1):
+        for month in range(3, 13):
             page.goto(f'{url}?month={month}&year={year}')
-            table = page.locator("#arch_table > tbody > tr:nth-child(3) > td > table")
-            parse_table(table)
+            table = page.locator('#arch_table table')
+            parse_table(table, year, month)
+
 
 def run(playwright: Playwright) -> None:
     browser = playwright.chromium.launch(headless=False)
@@ -29,7 +37,7 @@ def run(playwright: Playwright) -> None:
     page = context.new_page()
     page.goto(url)
 
-    iterate_archive(page, 2022, 2022)
+    iterate_archive(page, 2021, 2022)
 
     context.close()
     browser.close()
