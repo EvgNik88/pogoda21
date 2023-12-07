@@ -5,13 +5,14 @@ url = "https://pogoda21.ru/arch.php"
 
 
 def parse_table(table: Locator, year: int, month: int) -> None:
-    all_data = []
     rows = table.locator("tr")
     rows_count = rows.count()
     if month == 2 and year % 4 != 0:
         rows_count = rows_count - 1
 
-    with open('weather_arch.csv', 'w', newline='', encoding='utf-8') as csvfile:
+    filename = f'Архив_погоды_{month}_{year}.csv'
+
+    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerow(['Дата', 'Минимум', 'Средняя', 'Максимум', 'Отклонение_от_нормы', 'Осадки'])
         for i in range(2, rows_count):
