@@ -1,31 +1,35 @@
 from playwright.sync_api import Playwright, sync_playwright, Locator, Page
-import datetime
 import csv
 
 url = "https://pogoda21.ru/arch.php"
 
 
 def parse_table(table: Locator, year: int, month: int) -> None:
+    all_data = []
     rows = table.locator("tr")
     rows_count = rows.count()
-    for i in range(2, rows_count):
-        row = rows.nth(i)
-        cells = row.locator("td")
-        cellData = []
-        for j in range(cells.count()):
-            cell = cells.nth(j)
-            if cell.text_content():
-                cellData.append(float(cell.text_content()))
-        date = datetime.datetime(year, month, i - 1).strftime("%d-%m-%Y")
-        cellData[0] = date
+    if month == 2 and year % 4 != 0:
+        rows_count = rows_count - 1
 
-
-        print(cellData)
+    with open('weather_arch.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',')
+        writer.writerow(['Дата', 'Минимум', 'Средняя', 'Максимум', 'Отклонение_от_нормы', 'Осадки'])
+        for i in range(2, rows_count):
+            row = rows.nth(i)
+            cells = row.locator("td")
+            cell_data = []
+            for j in range(cells.count()):
+                cell = cells.nth(j)
+                if cell.text_content():
+                    cell_data.append(float(cell.text_content()))
+            cell_data[0] = f'{str(i - 1).zfill(2)}.{str(month).zfill(2)}.{year}'
+            writer.writerow(cell_data)
+            print(*cell_data)
 
 
 def iterate_archive(page: Page, yearStart: int, yearEnd: int) -> None:
     for year in range(yearStart, yearEnd + 1):
-        for month in range(3, 13):
+        for month in range(1, 13):
             page.goto(f'{url}?month={month}&year={year}')
             table = page.locator('#arch_table table')
             parse_table(table, year, month)
@@ -37,7 +41,7 @@ def run(playwright: Playwright) -> None:
     page = context.new_page()
     page.goto(url)
 
-    iterate_archive(page, 2021, 2022)
+    iterate_archive(page, yearStart=int(input('Введите год начала: ')), yearEnd=int(input('Введите год конца: ')))
 
     context.close()
     browser.close()
