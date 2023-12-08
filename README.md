@@ -8,11 +8,15 @@
 ```
 python -m venv env
 ```
-5. Установить зависимости
+5. Установить браузеры
+```
+playwright install
+```
+6. Установить зависимости
 ```
 env\Scripts\pip install -r requirements.txt
 ```
-6. Запустить программу 
+7. Запустить программу 
 ```
 python scraper.py
 ```
