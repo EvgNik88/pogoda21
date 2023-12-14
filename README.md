@@ -16,7 +16,12 @@ playwright install
 ```
 env\Scripts\pip install -r requirements.txt
 ```
-7. Запустить программу 
+7. Запустить программу с параметрами или без
 ```
 python scraper.py
+```
+```
+-s или --start - год начала для сбора данных
+-e или --end - год конца сбора данных
+-o или --output - путь сохранения выходного файла
 ```
