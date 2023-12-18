@@ -24,8 +24,8 @@ def parse_table(table: Locator, year: int, month: int, writer: csv.writer) -> No
         print(*cell_data)
 
 
-def iterate_archive(page: Page, yearStart: int, yearEnd: int, writer: csv.writer) -> None:
-    for year in range(yearStart, yearEnd + 1):
+def iterate_archive(page: Page, year_of_start: int, year_of_end: int, writer: csv.writer) -> None:
+    for year in range(year_of_start, year_of_end + 1):
         for month in range(1, 13):
             page.goto(f'{url}?month={month}&year={year}')
             table = page.locator('//*[@id="arch_table"]//table')
@@ -33,7 +33,7 @@ def iterate_archive(page: Page, yearStart: int, yearEnd: int, writer: csv.writer
 
 
 def run(playwright: Playwright, year_start: int, year_end: int, output_path: str) -> None:
-    filename = f'{output_path}.csv'
+    filename = f'{output_path}'
 
     with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
@@ -44,21 +44,19 @@ def run(playwright: Playwright, year_start: int, year_end: int, output_path: str
         page = context.new_page()
         page.goto(url)
 
-        iterate_archive(page, yearStart=year_start, yearEnd=year_end, writer=writer)
+        iterate_archive(page, year_of_start=year_start, year_of_end=year_end, writer=writer)
 
         context.close()
         browser.close()
 
 
 parser = argparse.ArgumentParser(description="Аргументы командной строки")
-parser.add_argument("--start", "-s", type=int, help="Год начала ")
-parser.add_argument("--end", "-e", type=int, help="Год конца")
-parser.add_argument("--output", "-o", type=str, help="Путь сохранения файла")
+parser.add_argument("--start", "-s", type=int, help="Год начала", default=2008)
+parser.add_argument("--end", "-e", type=int, help="Год конца", default=2023)
+parser.add_argument("--output", "-o", type=str, help="Путь сохранения файла", default='Архив погоды.csv')
 
 args = parser.parse_args()
 
 with sync_playwright() as playwright:
-    if args.start and args.end and args.output and args.start <= args.end:
-        run(playwright, year_start=args.start, year_end=args.end, output_path=args.output)
-    else:
-        run(playwright, year_start=2008, year_end=2023, output_path='Архив погоды.csv')
+    run(playwright, year_start=args.start, year_end=args.end, output_path=args.output)
+    print(f'Данные загружены в файл {str(args.output).split("/")[-1]}')
